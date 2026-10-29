@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Urlaubsplaner – Tests</title>
+  <style>
+    body { font: 15px/1.5 system-ui, sans-serif; margin: 20px; }
+    .ok { color: #15803d; } .fail { color: #b91c1c; font-weight: 600; }
+    li small { display: block; color: #b91c1c; font-weight: 400; }
+  </style>
+</head>
+<body>
+  <h1>Logik-Tests</h1>
+  <p id="summary">Läuft…</p>
+  <ul id="results"></ul>
+  <script src="../js/dates.js"></script>
+  <script src="../js/holidays.js"></script>
+  <script src="../js/workdays.js"></script>
+  <script src="../js/model.js"></script>
+  <script src="../js/ferien.js"></script>
+  <script src="../js/io.js"></script>
+  <script src="../data/schulferien-by.js"></script>
+  <script src="test.js"></script>
+  <script>
+    var r = window.UP_TEST_RESULTS || [];
+    var failed = r.filter(function (x) { return !x.ok; }).length;
+    document.getElementById('summary').textContent = (r.length - failed) + '/' + r.length + ' Tests bestanden';
+    document.getElementById('summary').className = failed ? 'fail' : 'ok';
+    document.getElementById('results').innerHTML = r.map(function (x) {
+      return '<li class="' + (x.ok ? 'ok' : 'fail') + '">' + (x.ok ? '✓ ' : '✗ ') + x.name +
+        (x.ok ? '' : '<small>' + x.error.replace(/</g, '&lt;') + '</small>') + '</li>';
+    }).join('');
+  </script>
+</body>
+</html>

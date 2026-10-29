@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1e293b">
+  <title>Urlaubsplaner</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar" id="topbar">
+    <div class="topbar-row">
+      <h1 class="app-title">Urlaubsplaner</h1>
+      <div class="year-nav" role="group" aria-label="Jahr wählen">
+        <button type="button" class="icon-btn" id="prevYear" aria-label="Vorheriges Jahr">‹</button>
+        <span class="year" id="yearLabel">2026</span>
+        <button type="button" class="icon-btn" id="nextYear" aria-label="Nächstes Jahr">›</button>
+      </div>
+      <nav class="actions">
+        <button type="button" class="btn" id="openKita">KiTa</button>
+        <button type="button" class="btn" id="openData">Daten</button>
+        <button type="button" class="btn" id="openSettings" aria-label="Einstellungen">⚙<span class="hide-sm"> Einstellungen</span></button>
+      </nav>
+    </div>
+    <div class="topbar-row counters" id="counters" role="radiogroup" aria-label="Aktive Person und Zähler"></div>
+    <div class="topbar-row modes" role="radiogroup" aria-label="Bearbeitungsmodus">
+      <span class="modes-label">Tippen trägt ein für:</span>
+      <div class="segmented" id="modeButtons"></div>
+    </div>
+  </header>
+
+  <div class="banner warn" id="storageBanner" hidden></div>
+  <div class="banner" id="exportBanner" hidden>
+    <span id="exportBannerText"></span>
+    <span class="banner-actions">
+      <button type="button" class="btn primary" id="bannerExport">Jetzt sichern</button>
+      <button type="button" class="btn ghost" id="bannerDismiss">Später</button>
+    </span>
+  </div>
+
+  <section class="toolbar" aria-label="Anzeige">
+    <label class="chk"><input type="checkbox" id="showHolidays"> <span class="sw sw-hol"></span>Feiertage</label>
+    <label class="chk"><input type="checkbox" id="showSchool"> <span class="sw sw-school"></span>Schulferien BY</label>
+    <label class="chk"><input type="checkbox" id="showKita"> <span class="sw sw-kita"></span>KiTa</label>
+    <label class="chk"><input type="checkbox" id="showYearTurn"> Jahreswechsel (Dez./Jan.)</label>
+    <button type="button" class="btn ghost small" id="toggleLegend" aria-expanded="false">Legende</button>
+  </section>
+
+  <section class="legend" id="legend" hidden>
+    <ul>
+      <li><span class="lg lg-we"></span>Wochenende</li>
+      <li><span class="lg lg-hol"></span>Feiertag (beide Personen)</li>
+      <li><span class="lg lg-holpart"><b>BY</b></span>Feiertag nur in diesem Bundesland</li>
+      <li><span class="lg lg-school"></span>Schulferien Bayern (Streifen oben)</li>
+      <li><span class="lg lg-kita"></span>KiTa-Ferien/Schließtage (Streifen unten)</li>
+      <li><span class="lg lg-vac" id="lgP1"></span><span id="lgP1Name">Person 1</span></li>
+      <li><span class="lg lg-vac" id="lgP2"></span><span id="lgP2Name">Person 2</span></li>
+      <li><span class="lg lg-vac" id="lgBoth"></span>Beide im Urlaub (Überlappung)</li>
+      <li><span class="lg lg-vac lg-free" id="lgFree"></span>Urlaub an freiem Tag (zählt nicht)</li>
+    </ul>
+    <p class="hint">
+      <b>Bedienung:</b> Tag antippen bzw. anklicken schaltet Urlaub für die gewählte Person an/aus.
+      Zeitraum: mit der Maus gedrückt ziehen, auf dem Handy <b>lange drücken und dann ziehen</b>.
+      Beginnt der Zeitraum auf einem Urlaubstag, wird gelöscht, sonst eingetragen.
+    </p>
+    <p class="hint" id="schoolDataHint"></p>
+  </section>
+
+  <main id="calendar" class="calendar" aria-label="Jahreskalender"></main>
+
+  <footer class="footer">
+    Daten werden nur in diesem Browser gespeichert und können z. B. beim Löschen des
+    Browser-Verlaufs verloren gehen – bitte regelmäßig unter <b>Daten</b> als JSON sichern.
+    <span id="lastExportFooter"></span>
+  </footer>
+
+  <aside class="dayinfo" id="dayinfo" hidden aria-live="polite">
+    <div class="dayinfo-body" id="dayinfoBody"></div>
+    <button type="button" class="icon-btn" id="dayinfoClose" aria-label="Schließen">×</button>
+  </aside>
+
+  <!-- Einstellungen -->
+  <dialog id="settingsDialog" class="dialog">
+    <form method="dialog" class="dialog-inner">
+      <header class="dialog-head">
+        <h2>Einstellungen</h2>
+        <button class="icon-btn" value="close" aria-label="Schließen">×</button>
+      </header>
+      <div id="settingsBody" class="settings-grid"></div>
+      <p class="hint">Änderungen werden sofort gespeichert. Nur ganze Urlaubstage; Wochenenden und
+        Feiertage des eigenen Bundeslandes werden nicht vom Anspruch abgezogen.</p>
+      <footer class="dialog-foot"><button class="btn primary" value="close">Fertig</button></footer>
+    </form>
+  </dialog>
+
+  <!-- KiTa -->
+  <dialog id="kitaDialog" class="dialog">
+    <div class="dialog-inner">
+      <header class="dialog-head">
+        <h2>KiTa-Ferien &amp; Schließtage</h2>
+        <button type="button" class="icon-btn" data-close aria-label="Schließen">×</button>
+      </header>
+      <form id="kitaForm" class="kita-form" novalidate>
+        <input type="hidden" id="kitaId">
+        <label>Bezeichnung
+          <input type="text" id="kitaLabel" maxlength="80" placeholder="z. B. Sommerschließung">
+        </label>
+        <div class="row2">
+          <label>Von <input type="date" id="kitaStart" required></label>
+          <label>Bis <input type="date" id="kitaEnd" required></label>
+        </div>
+        <p class="error" id="kitaError" hidden></p>
+        <div class="form-actions">
+          <button type="submit" class="btn primary" id="kitaSave">Hinzufügen</button>
+          <button type="button" class="btn ghost" id="kitaCancel" hidden>Abbrechen</button>
+        </div>
+      </form>
+      <ul class="kita-list" id="kitaList"></ul>
+      <p class="hint">Tipp: Im Kalender den Modus „KiTa“ wählen und einen Zeitraum ziehen.</p>
+    </div>
+  </dialog>
+
+  <!-- Daten -->
+  <dialog id="dataDialog" class="dialog">
+    <div class="dialog-inner">
+      <header class="dialog-head">
+        <h2>Daten exportieren &amp; importieren</h2>
+        <button type="button" class="icon-btn" data-close aria-label="Schließen">×</button>
+      </header>
+      <p class="notice">Deine Planung liegt nur im Speicher dieses Browsers. Der Browser kann ihn
+        löschen (Verlauf löschen, Speicherplatz, privater Modus). <b>Sichere regelmäßig den
+        kompletten Stand als JSON</b>, um ihn später oder auf einem anderen Gerät wieder einzulesen.</p>
+      <p class="hint" id="lastExportInfo"></p>
+      <h3>Kompletter Planungsstand</h3>
+      <div class="btn-row">
+        <button type="button" class="btn primary" id="exportJson">JSON exportieren</button>
+        <label class="btn file-btn">JSON importieren…
+          <input type="file" id="importJson" accept=".json,application/json">
+        </label>
+      </div>
+      <h3>CSV pro Person (für Excel)</h3>
+      <p class="hint">Spalten Start;Ende;Typ;Bezeichnung – Typ ist „Urlaub“ oder „KiTa-Ferien“.</p>
+      <div class="btn-row" id="csvButtons"></div>
+    </div>
+  </dialog>
+
+  <!-- Meldungen / Rückfragen -->
+  <dialog id="msgDialog" class="dialog small">
+    <form method="dialog" class="dialog-inner">
+      <h2 id="msgTitle"></h2>
+      <div id="msgBody"></div>
+      <footer class="dialog-foot">
+        <button class="btn ghost" value="cancel" id="msgCancel">Abbrechen</button>
+        <button class="btn primary" value="ok" id="msgOk">OK</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <script src="js/dates.js"></script>
+  <script src="js/holidays.js"></script>
+  <script src="js/workdays.js"></script>
+  <script src="js/model.js"></script>
+  <script src="js/ferien.js"></script>
+  <script src="js/io.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="data/schulferien-by.js"></script>
+  <script src="js/ui/calendar.js"></script>
+  <script src="js/ui/app.js"></script>
+</body>
+</html>
