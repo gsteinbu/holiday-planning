@@ -4,7 +4,10 @@
  * {
  *   format: "urlaubsplaner", version: 1,
  *   persons: [ { id, name, color, state: "HE"|"BY", entitlement, assumptionDay,
+ *                freeWeekdays: [1..5],          // regelmäßig freie Wochentage (1 = Mo)
  *                vacationDays: ["YYYY-MM-DD", ...] }, ... ],   // genau 2
+ *
+ * Versionen: 1 = ohne freeWeekdays (wird beim Laden mit [] ergänzt), 2 = aktuell.
  *   kitaClosures: [ { id, start, end, label } ],
  *   ui: { year, activeMode, showHolidays, showSchool, showKita, showYearTurn }
  * }
@@ -16,7 +19,7 @@
   var H = UP.holidays;
 
   var FORMAT = 'urlaubsplaner';
-  var VERSION = 1;
+  var VERSION = 2;
   var COLOR_RE = /^#[0-9a-fA-F]{6}$/;
 
   function uid() {
@@ -39,8 +42,8 @@
       format: FORMAT,
       version: VERSION,
       persons: [
-        { id: 'p1', name: 'Person 1', color: '#2563eb', state: 'HE', entitlement: 30, assumptionDay: false, vacationDays: [] },
-        { id: 'p2', name: 'Person 2', color: '#ea580c', state: 'BY', entitlement: 30, assumptionDay: true, vacationDays: [] }
+        { id: 'p1', name: 'Person 1', color: '#2563eb', state: 'HE', entitlement: 30, assumptionDay: false, freeWeekdays: [], vacationDays: [] },
+        { id: 'p2', name: 'Person 2', color: '#ea580c', state: 'BY', entitlement: 30, assumptionDay: true, freeWeekdays: [], vacationDays: [] }
       ],
       kitaClosures: [],
       ui: defaultUi()
@@ -93,6 +96,14 @@
         if (p.assumptionDay !== undefined && typeof p.assumptionDay !== 'boolean') {
           errors.push(label + ': "assumptionDay" muss true oder false sein.');
         }
+        var free = [];
+        if (p.freeWeekdays !== undefined) {
+          var okFree = Array.isArray(p.freeWeekdays) && p.freeWeekdays.every(function (w) {
+            return Number.isInteger(w) && w >= 1 && w <= 5;
+          });
+          if (!okFree) errors.push(label + ': Freie Wochentage müssen eine Liste von Zahlen 1 (Mo) bis 5 (Fr) sein.');
+          else free = Array.from(new Set(p.freeWeekdays)).sort();
+        }
         var days = [];
         if (!Array.isArray(p.vacationDays)) {
           errors.push(label + ': Liste der Urlaubstage fehlt.');
@@ -110,6 +121,7 @@
           state: p.state,
           entitlement: p.entitlement,
           assumptionDay: !!p.assumptionDay,
+          freeWeekdays: free,
           vacationDays: days
         });
       });

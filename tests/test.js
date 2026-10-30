@@ -150,6 +150,26 @@
     eq(W.toRanges(['2026-04-02', '2026-04-07'], p), [{ start: '2026-04-02', end: '2026-04-07' }]);
   });
 
+  test('Freie Wochentage zählen nicht als Urlaubstage', function () {
+    var p = person('HE', { freeWeekdays: [4], vacationDays: D.range('2026-07-06', '2026-07-10') });
+    eq(W.usedVacationDays(p, 2026), 4, 'Do 09.07. ist frei');
+    eq(W.isWorkday('2026-07-09', p), false);
+    eq(W.freeReason('2026-07-09', p), 'freier Donnerstag');
+    eq(W.freeReason('2026-07-11', p), 'Wochenende');
+    eq(W.freeReason('2026-06-04', p), 'Feiertag', 'Fronleichnam (Do) bleibt Feiertag');
+    eq(W.freeReason('2026-07-08', p), null);
+    // 2026 Hessen: 253 Arbeitstage; 2026 hat 53 Donnerstage, davon 3 Feiertage
+    // (01.01., 14.05., 04.06.) -> 50 zusätzliche freie Tage
+    eq(W.countWorkdays('2026-01-01', '2026-12-31', p), 253 - 50);
+    p.freeWeekdays = [1, 5];
+    eq(W.usedVacationDays(p, 2026), 3);
+  });
+  test('Freie Wochentage verbinden Zeiträume', function () {
+    var p = person('HE', { freeWeekdays: [5] });
+    // Do 09.07. und Mo 13.07.: dazwischen Fr (frei) + Wochenende
+    eq(W.toRanges(['2026-07-09', '2026-07-13'], p), [{ start: '2026-07-09', end: '2026-07-13' }]);
+  });
+
   // ---------- Modell ----------
   test('Standardzustand ist gültig', function () {
     var res = M.validateState(M.createDefaultState());
@@ -175,6 +195,24 @@
     var res = M.validateState(s);
     eq(res.ok, false);
     eq(res.errors.length, 4, res.errors.join(' | '));
+  });
+  test('Import Version 1 (ohne freie Wochentage) wird übernommen', function () {
+    var s = M.createDefaultState();
+    s.version = 1;
+    s.persons.forEach(function (p) { delete p.freeWeekdays; });
+    var res = M.validateState(s);
+    ok(res.ok, JSON.stringify(res.errors));
+    eq(res.state.version, M.VERSION);
+    eq(res.state.persons[0].freeWeekdays, []);
+  });
+  test('Freie Wochentage werden validiert', function () {
+    var s = M.createDefaultState();
+    s.persons[0].freeWeekdays = [4, 2, 4];
+    eq(M.validateState(s).state.persons[0].freeWeekdays, [2, 4]);
+    s.persons[0].freeWeekdays = [0];
+    eq(M.validateState(s).ok, false, 'Sonntag ist kein gültiger freier Arbeitstag');
+    s.persons[0].freeWeekdays = 'Do';
+    eq(M.validateState(s).ok, false);
   });
   test('Validierung bereinigt doppelte und unsortierte Tage', function () {
     var s = M.createDefaultState();
@@ -222,17 +260,29 @@
   });
 
   // ---------- Export / Import ----------
-  test('CSV-Export: BOM, Semikolon, ISO-Daten, Typen', function () {
+  test('CSV-Export: nur Urlaub der Person, ohne BOM, mit Tages- und Arbeitstagezahl', function () {
     var s = M.createDefaultState();
-    s.persons[0].vacationDays = D.range('2026-07-06', '2026-07-10');
-    M.upsertKita(s, { start: '2026-08-10', end: '2026-08-21', label: 'Sommer; "groß"' });
-    var csv = IO.personCsv(s, s.persons[0]);
-    eq(csv.charCodeAt(0), 0xFEFF, 'BOM');
-    eq(csv.slice(1).split('\r\n'), [
-      'Start;Ende;Typ;Bezeichnung',
-      '2026-07-06;2026-07-10;Urlaub;',
-      '2026-08-10;2026-08-21;KiTa-Ferien;"Sommer; ""groß"""',
+    var p = s.persons[0]; // Hessen
+    // Zwei Wochen Mo-Fr (Wochenende dazwischen nicht markiert) -> ein Zeitraum
+    p.vacationDays = D.range('2026-07-06', '2026-07-10').concat(D.range('2026-07-13', '2026-07-17'));
+    // Osterwoche inkl. Karfreitag/Ostermontag
+    M.setVacation(p, D.range('2026-03-30', '2026-04-06'), true);
+    M.upsertKita(s, { start: '2026-08-10', end: '2026-08-21', label: 'Sommer' });
+    var csv = IO.personCsv(s, p);
+    ok(csv.charCodeAt(0) !== 0xFEFF, 'keine BOM');
+    ok(/^[\x00-\x7f]*$/.test(csv), 'reines ASCII');
+    eq(csv.split('\r\n'), [
+      'Start;Ende;Anzahl Tage;Anzahl Arbeitstage',
+      '2026-03-30;2026-04-06;8;4',
+      '2026-07-06;2026-07-17;12;10',
       '']);
+  });
+  test('CSV-Export berücksichtigt freie Wochentage', function () {
+    var s = M.createDefaultState();
+    var p = s.persons[0];
+    p.freeWeekdays = [4]; // donnerstags frei
+    p.vacationDays = ['2026-07-06', '2026-07-07', '2026-07-08', '2026-07-10'];
+    eq(IO.personCsv(s, p).split('\r\n')[1], '2026-07-06;2026-07-10;5;4');
   });
   test('JSON-Export und -Import ergeben denselben Stand', function () {
     var s = M.createDefaultState();

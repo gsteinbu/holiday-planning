@@ -1,6 +1,7 @@
 /*
  * Arbeitstage und Urlaubszählung pro Person.
- * Ein Arbeitstag ist Mo-Fr und kein Feiertag im Bundesland der Person.
+ * Ein Arbeitstag ist Mo-Fr, kein persönlicher freier Wochentag (z. B. jeden
+ * Donnerstag) und kein Feiertag im Bundesland der Person.
  */
 (function (root) {
   'use strict';
@@ -12,10 +13,26 @@
     return { assumptionDay: person.state === 'BY' && !!person.assumptionDay };
   }
 
+  /** Ist der Wochentag für die Person regelmäßig arbeitsfrei (z. B. Teilzeit)? */
+  function isPersonalFreeDay(isoDay, person) {
+    var free = person.freeWeekdays;
+    return !!free && free.length > 0 && free.indexOf(D.weekday(isoDay)) >= 0;
+  }
+
   /** Ist der Tag für diese Person ein Arbeitstag? */
   function isWorkday(isoDay, person) {
     if (D.isWeekend(isoDay)) return false;
+    if (isPersonalFreeDay(isoDay, person)) return false;
     return !H.holidayName(isoDay, person.state, holidayOptions(person));
+  }
+
+  /** Warum ist der Tag für die Person arbeitsfrei? null = Arbeitstag. */
+  function freeReason(isoDay, person) {
+    if (D.isWeekend(isoDay)) return 'Wochenende';
+    var hol = H.holidayName(isoDay, person.state, holidayOptions(person));
+    if (hol) return 'Feiertag';
+    if (isPersonalFreeDay(isoDay, person)) return 'freier ' + D.WEEKDAYS_LONG[D.weekday(isoDay)];
+    return null;
   }
 
   /** Feiertagsname des Tages im Bundesland der Person oder null. */
@@ -53,7 +70,7 @@
   /**
    * Fasst einzelne Tage zu Zeiträumen zusammen.
    * Lücken, die nur aus arbeitsfreien Tagen der Person bestehen (Wochenende,
-   * Feiertag), werden überbrückt - so wird z. B. Mo-Fr + Mo-Fr zu einem
+   * Feiertag, freier Wochentag), werden überbrückt - so wird z. B. Mo-Fr + Mo-Fr zu einem
    * zweiwöchigen Zeitraum. Ohne person werden nur direkt aufeinanderfolgende
    * Tage zusammengefasst.
    */
@@ -80,6 +97,8 @@
 
   UP.workdays = {
     isWorkday: isWorkday,
+    isPersonalFreeDay: isPersonalFreeDay,
+    freeReason: freeReason,
     personHoliday: personHoliday,
     countWorkdays: countWorkdays,
     usedVacationDays: usedVacationDays,

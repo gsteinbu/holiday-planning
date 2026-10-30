@@ -81,6 +81,7 @@
   }
 
   var WEEKDAYS_SHORT = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+  var WEEKDAYS_LONG = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
   var MONTHS = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli',
     'August', 'September', 'Oktober', 'November', 'Dezember'];
 
@@ -103,6 +104,7 @@
     today: today,
     formatDE: formatDE,
     WEEKDAYS_SHORT: WEEKDAYS_SHORT,
+    WEEKDAYS_LONG: WEEKDAYS_LONG,
     MONTHS: MONTHS
   };
 })(typeof window !== 'undefined' ? window : globalThis);
