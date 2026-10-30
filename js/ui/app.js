@@ -173,7 +173,10 @@
       var parts = [];
       if (hol) parts.push('Feiertag (' + H.STATES[p.state] + '): ' + esc(hol));
       if (vac) {
-        parts.push(W.isWorkday(day, p) ? '<b>Urlaub</b> (zählt)' : '<b>Urlaub</b> (zählt nicht – arbeitsfrei)');
+        var reason = W.freeReason(day, p);
+        parts.push(reason ? '<b>Urlaub</b> (zählt nicht – ' + esc(reason) + ')' : '<b>Urlaub</b> (zählt)');
+      } else if (!hol && W.isPersonalFreeDay(day, p) && !D.isWeekend(day)) {
+        parts.push('arbeitsfrei (' + esc(W.freeReason(day, p)) + ')');
       }
       if (parts.length) {
         lines.push('<li><span class="dot" style="--pc:' + p.color + '"></span><b>' + esc(p.name) + ':</b> ' + parts.join(' · ') + '</li>');
@@ -252,6 +255,11 @@
         '<label>Name <input type="text" data-f="name" maxlength="40" value="' + esc(p.name) + '"></label>' +
         '<label class="color-label">Farbe <input type="color" data-f="color" value="' + p.color + '"></label>' +
         '<label>Bundesland <select data-f="state">' + stateOptions + '</select></label>' +
+        '<div class="free-days" role="group" aria-label="Arbeitsfreie Wochentage"><span>Regelmäßig arbeitsfrei (z. B. Teilzeit)</span><div>' +
+        [1, 2, 3, 4, 5].map(function (w) {
+          return '<label class="day-chip"><input type="checkbox" data-f="freeWeekday" data-w="' + w + '"' +
+            (p.freeWeekdays.indexOf(w) >= 0 ? ' checked' : '') + '><span>' + D.WEEKDAYS_SHORT[w] + '</span></label>';
+        }).join('') + '</div></div>' +
         '<label>Urlaubsanspruch pro Jahr (Tage) <input type="number" inputmode="numeric" min="0" max="366" step="1" data-f="entitlement" value="' + p.entitlement + '"></label>' +
         '<label class="chk"' + (p.state === 'BY' ? '' : ' hidden') + '><input type="checkbox" data-f="assumptionDay"' +
         (p.assumptionDay ? ' checked' : '') + '> Mariä Himmelfahrt (15.08.) ist Feiertag</label>' +
@@ -287,6 +295,12 @@
       p.entitlement = n;
     } else if (field === 'assumptionDay') {
       p.assumptionDay = !!v;
+    } else if (field === 'freeWeekday') {
+      if (e.type !== 'change') return;
+      var w = +e.target.getAttribute('data-w');
+      var free = p.freeWeekdays.filter(function (x) { return x !== w; });
+      if (v) free.push(w);
+      p.freeWeekdays = free.sort();
     }
     commit();
     if (selectedDay) showDayInfo(selectedDay);

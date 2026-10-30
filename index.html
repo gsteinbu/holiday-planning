@@ -51,6 +51,7 @@
       <li><span class="lg lg-we"></span>Wochenende</li>
       <li><span class="lg lg-hol"></span>Feiertag (beide Personen)</li>
       <li><span class="lg lg-holpart"><b>BY</b></span>Feiertag nur in diesem Bundesland</li>
+      <li><span class="lg lg-pfree" id="lgPfree"></span>Regelmäßig freier Wochentag (Schraffur in Personenfarbe)</li>
       <li><span class="lg lg-school"></span>Schulferien Bayern (Streifen oben)</li>
       <li><span class="lg lg-kita"></span>KiTa-Ferien/Schließtage (Streifen unten)</li>
       <li><span class="lg lg-vac" id="lgP1"></span><span id="lgP1Name">Person 1</span></li>
@@ -87,8 +88,8 @@
         <button class="icon-btn" value="close" aria-label="Schließen">×</button>
       </header>
       <div id="settingsBody" class="settings-grid"></div>
-      <p class="hint">Änderungen werden sofort gespeichert. Nur ganze Urlaubstage; Wochenenden und
-        Feiertage des eigenen Bundeslandes werden nicht vom Anspruch abgezogen.</p>
+      <p class="hint">Änderungen werden sofort gespeichert. Nur ganze Urlaubstage; Wochenenden,
+        Feiertage des eigenen Bundeslandes und regelmäßig freie Wochentage werden nicht vom Anspruch abgezogen.</p>
       <footer class="dialog-foot"><button class="btn primary" value="close">Fertig</button></footer>
     </form>
   </dialog>
@@ -138,8 +139,9 @@
           <input type="file" id="importJson" accept=".json,application/json">
         </label>
       </div>
-      <h3>CSV pro Person (für Excel)</h3>
-      <p class="hint">Spalten Start;Ende;Typ;Bezeichnung – Typ ist „Urlaub“ oder „KiTa-Ferien“.</p>
+      <h3>Urlaub als CSV pro Person (für Excel)</h3>
+      <p class="hint">Spalten Start;Ende;Anzahl Tage;Anzahl Arbeitstage – „Anzahl Tage“ sind Kalendertage,
+        „Anzahl Arbeitstage“ die davon verbrauchten Urlaubstage.</p>
       <div class="btn-row" id="csvButtons"></div>
     </div>
   </dialog>

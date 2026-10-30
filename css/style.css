@@ -252,6 +252,10 @@ button, input, select { font: inherit; color: inherit; }
 .day.school::before { top: 0; background: var(--school); }
 .day.kita::after { bottom: 0; background: var(--kita); }
 
+.day.pfree { --hatch: var(--p1); background-image: repeating-linear-gradient(135deg, color-mix(in srgb, var(--hatch) 28%, transparent) 0 2px, transparent 2px 6px); }
+.day.pfree-p2 { --hatch: var(--p2); }
+.day.pfree-both { background-image: repeating-linear-gradient(135deg, color-mix(in srgb, var(--p1) 30%, transparent) 0 2px, transparent 2px 6px, color-mix(in srgb, var(--p2) 30%, transparent) 6px 8px, transparent 8px 12px); }
+.lg-pfree { background-image: repeating-linear-gradient(135deg, #94a3b8 0 2px, transparent 2px 6px); }
 .day .vac {
   position: absolute;
   inset: 4px 3px;
@@ -358,6 +362,17 @@ ul.errors { color: var(--danger); padding-left: 20px; }
   display: flex; flex-direction: column; gap: 10px;
   min-width: 0;
 }
+.free-days { display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+.free-days > div { display: flex; gap: 4px; flex-wrap: wrap; }
+.dialog label.day-chip { flex-direction: row; cursor: pointer; }
+.day-chip input { position: absolute; opacity: 0; pointer-events: none; }
+.day-chip span {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 44px; min-height: 38px; border-radius: 8px;
+  border: 1px solid #cbd5e1; background: #fff; font-weight: 600;
+}
+.day-chip input:checked + span { background: var(--pc); border-color: var(--pc); color: #fff; }
+.day-chip input:focus-visible + span { outline: 2px solid var(--primary); outline-offset: 2px; }
 .person-settings legend { display: flex; align-items: center; gap: 6px; font-weight: 700; padding: 0 4px; }
 
 .kita-form { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }

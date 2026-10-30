@@ -11,26 +11,32 @@ beliebigen statischen Webspace legen (z. B. GitHub Pages).
 ## Funktionen
 
 - **Zwei Personen** mit Name, Farbe, Bundesland (Hessen/Bayern, unabhängig
-  voneinander wählbar), Jahresurlaubsanspruch und – in Bayern – der Option
+  voneinander wählbar), Jahresurlaubsanspruch, regelmäßig arbeitsfreien
+  Wochentagen (z. B. jeden Donnerstag bei Teilzeit) und – in Bayern – der Option
   „Mariä Himmelfahrt ist Feiertag“.
 - **Jahreskalender** mit Jahreswechsel-Ansicht (Dez. des Vorjahres und Jan. des
   Folgejahres zuschaltbar).
   - Wochenenden grau, Feiertage rot (mit Bundesland-Kürzel, wenn sie nur für eine
     Person gelten), Schulferien Bayern als oranger Streifen oben, KiTa-Ferien als
     türkiser Streifen unten.
+  - Regelmäßig freie Wochentage einer Person sind in ihrer Farbe schraffiert.
   - Urlaub in der Farbe der Person; Überlappung diagonal geteilt. Urlaub an
     arbeitsfreien Tagen wird blass dargestellt (zählt nicht).
 - **Bedienung**: Person oben wählen. Tag antippen/anklicken = an/aus.
   Zeitraum: mit der Maus ziehen, am Handy *lange drücken und ziehen*. Beginnt
   der Zeitraum auf einem Urlaubstag, wird gelöscht, sonst eingetragen. Modus
   „KiTa“ legt per Ziehen einen KiTa-Zeitraum an, „Nur ansehen“ zeigt nur Infos.
-- **Zähler** (fixiert oben): verplante Arbeitstage (ohne Wochenenden und Feiertage
-  des eigenen Bundeslandes), Anspruch, Rest; Warnung bei Überschreitung.
+- **Zähler** (fixiert oben): verplante Arbeitstage (ohne Wochenenden, Feiertage
+  des eigenen Bundeslandes und eigene freie Wochentage), Anspruch, Rest; Warnung bei Überschreitung.
 - **KiTa-Ferien/Schließtage**: Zeitraum + Bezeichnung, bearbeitbar, löschbar.
 - **Export/Import** (Knopf „Daten“):
-  - CSV pro Person: `Start;Ende;Typ;Bezeichnung`, ISO-Daten, Typ `Urlaub` oder
-    `KiTa-Ferien`, UTF-8 mit BOM. Aufeinanderfolgende Urlaubstage werden zu
-    Zeiträumen zusammengefasst (auch über Wochenenden/Feiertage hinweg).
+  - Urlaub als CSV pro Person: `Start;Ende;Anzahl Tage;Anzahl Arbeitstage`,
+    ISO-Daten, Semikolon. *Anzahl Tage* = Kalendertage des Zeitraums,
+    *Anzahl Arbeitstage* = davon verbrauchte Urlaubstage. Aufeinanderfolgende
+    Urlaubstage werden zu Zeiträumen zusammengefasst (auch über Wochenenden,
+    Feiertage und freie Wochentage hinweg). KiTa-Ferien sind nicht enthalten.
+    Die Datei ist reines ASCII und daher ohne BOM (manche Programme zeigen eine
+    BOM sonst als „ï»¿“ an).
   - JSON mit vollständigem Stand und Versionsfeld; Import mit Validierung und
     Rückfrage vor dem Überschreiben.
 - **Speicherung** im `localStorage` des Browsers, mit Erinnerung, regelmäßig
@@ -69,18 +75,21 @@ node tests/test.js
 
 oder `tests/index.html` im Browser öffnen.
 
-## JSON-Format (Version 1)
+## JSON-Format (Version 2)
+
+Version 1 (ohne `freeWeekdays`) wird weiterhin importiert.
 
 ```json
 {
   "format": "urlaubsplaner",
-  "version": 1,
+  "version": 2,
   "exportedAt": "2026-10-29T12:00:00.000Z",
   "persons": [
     { "id": "p1", "name": "Anna", "color": "#2563eb", "state": "HE",
-      "entitlement": 30, "assumptionDay": false, "vacationDays": ["2026-08-03"] },
+      "entitlement": 30, "assumptionDay": false, "freeWeekdays": [4],
+      "vacationDays": ["2026-08-03"] },
     { "id": "p2", "name": "Ben", "color": "#ea580c", "state": "BY",
-      "entitlement": 30, "assumptionDay": true, "vacationDays": [] }
+      "entitlement": 30, "assumptionDay": true, "freeWeekdays": [], "vacationDays": [] }
   ],
   "kitaClosures": [ { "id": "k1", "start": "2026-08-17", "end": "2026-08-28", "label": "Sommerschließung" } ],
   "ui": { "year": 2026, "activeMode": "p1", "showHolidays": true, "showSchool": true,

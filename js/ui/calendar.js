@@ -49,6 +49,8 @@
       var todayIso = D.today();
       var p1 = state.persons[0], p2 = state.persons[1];
 
+      container.style.setProperty('--p1', p1.color);
+      container.style.setProperty('--p2', p2.color);
       var html = monthsFor(ui).map(function (mo) {
         var first = D.iso(mo.y, mo.m, 1);
         var offset = (D.weekday(first) + 6) % 7; // Montag = 0
@@ -91,6 +93,14 @@
         else if (h1 || h2) {
           cls.push('hol-part');
           tag = '<span class="tag">' + (h1 ? p1.state : p2.state) + '</span>';
+        }
+      }
+      if (!D.isWeekend(day)) {
+        var f1 = W.isPersonalFreeDay(day, p1), f2 = W.isPersonalFreeDay(day, p2);
+        if (f1 || f2) {
+          cls.push('pfree');
+          var pf = f1 && f2 ? 'both' : f1 ? 'p1' : 'p2';
+          cls.push('pfree-' + pf);
         }
       }
       if (ui.showSchool && school.has(day)) cls.push('school');

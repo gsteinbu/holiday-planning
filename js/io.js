@@ -4,35 +4,25 @@
 (function (root) {
   'use strict';
   var UP = (root.UP = root.UP || {});
+  var D = UP.dates;
   var W = UP.workdays;
   var M = UP.model;
 
-  var BOM = '﻿';
-
-  function csvField(v) {
-    var s = String(v);
-    return /[;"\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
-  }
-
   /**
-   * CSV für eine Person: Urlaubszeiträume plus KiTa-Ferien.
-   * Spalten: Start;Ende;Typ;Bezeichnung - ISO-Daten, UTF-8 mit BOM, CRLF.
+   * CSV mit den Urlaubszeiträumen einer Person (ohne KiTa-Ferien).
+   * Spalten: Start;Ende;Anzahl Tage;Anzahl Arbeitstage
+   *  - Anzahl Tage: Kalendertage von Start bis Ende (inklusive)
+   *  - Anzahl Arbeitstage: davon verbrauchte Urlaubstage (ohne Wochenenden,
+   *    Feiertage und freie Wochentage der Person)
+   * Inhalt ist reines ASCII (ISO-Daten, Zahlen) - daher ohne BOM, die manche
+   * Programme sonst als "ï»¿" anzeigen. Trennzeichen Semikolon, CRLF.
    */
   function personCsv(state, person) {
-    var rows = W.toRanges(person.vacationDays, person).map(function (r) {
-      return { start: r.start, end: r.end, type: 'Urlaub', label: '' };
+    var lines = ['Start;Ende;Anzahl Tage;Anzahl Arbeitstage'];
+    W.toRanges(person.vacationDays, person).forEach(function (r) {
+      lines.push([r.start, r.end, D.diffDays(r.start, r.end) + 1, W.countWorkdays(r.start, r.end, person)].join(';'));
     });
-    state.kitaClosures.forEach(function (k) {
-      rows.push({ start: k.start, end: k.end, type: 'KiTa-Ferien', label: k.label });
-    });
-    rows.sort(function (a, b) {
-      return a.start < b.start ? -1 : a.start > b.start ? 1 : a.type < b.type ? -1 : 1;
-    });
-    var lines = [['Start', 'Ende', 'Typ', 'Bezeichnung'].join(';')];
-    rows.forEach(function (r) {
-      lines.push([r.start, r.end, r.type, r.label].map(csvField).join(';'));
-    });
-    return BOM + lines.join('\r\n') + '\r\n';
+    return lines.join('\r\n') + '\r\n';
   }
 
   /** Vollständiger Planungsstand als JSON-Text. */
