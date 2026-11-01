@@ -54,7 +54,7 @@
         commit();
       } else if (state.ui.activeMode === 'kita') {
         var existing = kitaMap.get(day);
-        openKita(existing || { start: day, end: day, label: '' });
+        openKita(existing || { start: day, end: day });
       }
       showDayInfo(day);
     },
@@ -68,7 +68,7 @@
         toast((M.hasVacation(p, anchor) ? 'Eingetragen: ' : 'Gelöscht: ') +
           D.formatDE(days[0]) + ' – ' + D.formatDE(days[days.length - 1]) + ' (' + n + ' Arbeitstage)');
       } else if (state.ui.activeMode === 'kita') {
-        openKita({ start: days[0], end: days[days.length - 1], label: '' });
+        openKita({ start: days[0], end: days[days.length - 1] });
       }
     }
   });
@@ -187,7 +187,7 @@
     var school = schoolIndex.map.get(day);
     if (school) lines.push('<li><span class="lg lg-school mini"></span>Schulferien: ' + esc(school) + '</li>');
     var k = kitaMap.get(day);
-    if (k) lines.push('<li><span class="lg lg-kita mini"></span>KiTa: ' + esc(k.label || 'geschlossen') + '</li>');
+    if (k) lines.push('<li><span class="lg lg-kita mini"></span>KiTa geschlossen (' + kitaRangeText(k) + ')</li>');
     if (!lines.length) lines.push('<li>' + (D.isWeekend(day) ? 'Wochenende' : 'Normaler Arbeitstag') + '</li>');
     $('dayinfoBody').innerHTML = '<div class="di-date">' + D.formatDE(day, true) + '</div><ul>' + lines.join('') + '</ul>';
     $('dayinfo').hidden = false;
@@ -314,34 +314,64 @@
   });
 
   // ---------- KiTa ----------
+  function kitaDays(k) {
+    return D.diffDays(k.start, k.end) + 1;
+  }
+
+  /** Kurzform "Mo 17.08. – Fr 28.08." bzw. über den Jahreswechsel "Do 24.12.26 – Di 05.01.27". */
+  function kitaRangeText(k) {
+    var crossYear = k.start.slice(0, 4) !== k.end.slice(0, 4);
+    function f(d) {
+      var s = D.formatDE(d, true); // "Do 24.12.2026"
+      return crossYear ? s.slice(0, -4) + s.slice(-2) : s.slice(0, -4);
+    }
+    return k.start === k.end ? f(k.start) : f(k.start) + ' – ' + f(k.end);
+  }
+
   function renderKitaList() {
     var list = state.kitaClosures;
-    $('kitaList').innerHTML = list.length ? list.map(function (k) {
-      var days = D.diffDays(k.start, k.end) + 1;
-      return '<li><div class="k-main"><b>' + esc(k.label || 'KiTa geschlossen') + '</b>' +
-        '<span>' + D.formatDE(k.start, true) + ' – ' + D.formatDE(k.end, true) + ' (' + days + (days === 1 ? ' Tag' : ' Tage') + ')</span></div>' +
-        '<div class="k-actions"><button type="button" class="btn small" data-edit="' + esc(k.id) + '">Bearbeiten</button>' +
-        '<button type="button" class="btn small danger" data-del="' + esc(k.id) + '">Löschen</button></div></li>';
-    }).join('') : '<li class="empty">Noch keine KiTa-Zeiträume eingetragen.</li>';
+    if (!list.length) {
+      $('kitaList').innerHTML = '<p class="empty">Noch keine KiTa-Schließzeiten eingetragen.</p>';
+      return;
+    }
+    // nach Jahr (des Beginns) gruppieren
+    var groups = [];
+    list.forEach(function (k) {
+      var y = k.start.slice(0, 4);
+      var g = groups[groups.length - 1];
+      if (!g || g.year !== y) groups.push(g = { year: y, items: [] });
+      g.items.push(k);
+    });
+    $('kitaList').innerHTML = groups.map(function (g) {
+      var total = g.items.reduce(function (n, k) { return n + kitaDays(k); }, 0);
+      return '<section class="k-year"><h3>' + g.year + '<span>' + g.items.length +
+        (g.items.length === 1 ? ' Zeitraum' : ' Zeiträume') + ' · ' + total + (total === 1 ? ' Tag' : ' Tage') + '</span></h3>' +
+        '<ul>' + g.items.map(function (k) {
+          var n = kitaDays(k);
+          var editing = $('kitaId').value === k.id;
+          return '<li' + (editing ? ' class="editing"' : '') + '><span class="k-range">' + kitaRangeText(k) + '</span>' +
+            '<span class="k-days">' + n + (n === 1 ? ' Tag' : ' Tage') + '</span>' +
+            '<button type="button" class="icon-btn small" data-edit="' + esc(k.id) + '" aria-label="Bearbeiten" title="Bearbeiten">✎</button>' +
+            '<button type="button" class="icon-btn small danger" data-del="' + esc(k.id) + '" aria-label="Löschen" title="Löschen">🗑</button></li>';
+        }).join('') + '</ul></section>';
+    }).join('');
   }
 
   function fillKitaForm(entry) {
     $('kitaId').value = entry && entry.id || '';
-    $('kitaLabel').value = entry && entry.label || '';
     $('kitaStart').value = entry && entry.start || '';
     $('kitaEnd').value = entry && entry.end || '';
     $('kitaError').hidden = true;
     var editing = !!(entry && entry.id);
     $('kitaSave').textContent = editing ? 'Änderung speichern' : 'Hinzufügen';
     $('kitaCancel').hidden = !editing;
+    renderKitaList();
   }
 
   function openKita(entry) {
-    renderKitaList();
     fillKitaForm(entry || null);
     var dlg = $('kitaDialog');
     if (!dlg.open) dlg.showModal();
-    if (entry && !entry.id) $('kitaLabel').focus();
   }
 
   $('openKita').addEventListener('click', function () { openKita(null); });
@@ -351,32 +381,32 @@
     var start = $('kitaStart').value, end = $('kitaEnd').value;
     if (start && !end) end = start;
     try {
-      M.upsertKita(state, { id: $('kitaId').value || null, start: start, end: end, label: $('kitaLabel').value });
+      M.upsertKita(state, { id: $('kitaId').value || null, start: start, end: end });
     } catch (err) {
       $('kitaError').textContent = err.message;
       $('kitaError').hidden = false;
       return;
     }
     commit();
-    renderKitaList();
     fillKitaForm(null);
-    toast('KiTa-Zeitraum gespeichert');
+    toast('KiTa-Schließzeit gespeichert');
   });
   $('kitaList').addEventListener('click', function (e) {
-    var edit = e.target.getAttribute('data-edit');
-    var del = e.target.getAttribute('data-del');
+    var btn = e.target.closest('button');
+    if (!btn) return;
+    var edit = btn.getAttribute('data-edit');
+    var del = btn.getAttribute('data-del');
     if (edit) {
       fillKitaForm(state.kitaClosures.filter(function (k) { return k.id === edit; })[0]);
-      $('kitaLabel').focus();
+      $('kitaStart').focus();
     }
     if (del) {
       var k = state.kitaClosures.filter(function (x) { return x.id === del; })[0];
       if (!k) return;
-      if (root.confirm('„' + (k.label || 'KiTa geschlossen') + '“ (' + D.formatDE(k.start) + ' – ' + D.formatDE(k.end) + ') löschen?')) {
+      if (root.confirm('KiTa-Schließzeit ' + D.formatDE(k.start) + (k.start === k.end ? '' : ' – ' + D.formatDE(k.end)) + ' löschen?')) {
         M.removeKita(state, del);
-        if ($('kitaId').value === del) fillKitaForm(null);
         commit();
-        renderKitaList();
+        if ($('kitaId').value === del) fillKitaForm(null); else renderKitaList();
       }
     }
   });
@@ -531,6 +561,8 @@
   root.addEventListener('resize', syncTopbar);
 
   // ---------- Start ----------
+  // Geplant wird standardmäßig das Folgejahr.
+  state.ui.year = new Date().getFullYear() + 1;
   if (loaded.warning) {
     $('storageBanner').textContent = loaded.warning;
     $('storageBanner').hidden = false;

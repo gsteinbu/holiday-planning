@@ -191,7 +191,7 @@
     s.persons[0].state = 'NW';
     s.persons[0].entitlement = 2.5;
     s.persons[1].vacationDays = ['2026-02-30'];
-    s.kitaClosures = [{ start: '2026-08-10', end: '2026-08-01', label: 'x' }];
+    s.kitaClosures = [{ start: '2026-08-10', end: '2026-08-01' }];
     var res = M.validateState(s);
     eq(res.ok, false);
     eq(res.errors.length, 4, res.errors.join(' | '));
@@ -214,6 +214,14 @@
     s.persons[0].freeWeekdays = 'Do';
     eq(M.validateState(s).ok, false);
   });
+  test('Ältere KiTa-Einträge mit Bezeichnung werden ohne Bezeichnung übernommen', function () {
+    var s = M.createDefaultState();
+    s.kitaClosures = [{ id: 'a', start: '2026-08-10', end: '2026-08-21', label: 'Sommer' }];
+    eq(M.validateState(s).state.kitaClosures, [{ id: 'a', start: '2026-08-10', end: '2026-08-21' }]);
+  });
+  test('Standardjahr ist das Folgejahr', function () {
+    eq(M.createDefaultState().ui.year, new Date().getFullYear() + 1);
+  });
   test('Validierung bereinigt doppelte und unsortierte Tage', function () {
     var s = M.createDefaultState();
     s.persons[0].vacationDays = ['2026-05-02', '2026-05-01', '2026-05-02'];
@@ -231,10 +239,10 @@
   });
   test('KiTa-Zeiträume anlegen, bearbeiten, löschen', function () {
     var s = M.createDefaultState();
-    var k = M.upsertKita(s, { start: '2026-08-10', end: '2026-08-21', label: ' Sommer ' });
+    var k = M.upsertKita(s, { start: '2026-08-10', end: '2026-08-21' });
     eq(s.kitaClosures.length, 1);
-    eq(s.kitaClosures[0].label, 'Sommer');
-    M.upsertKita(s, { id: k.id, start: '2026-08-10', end: '2026-08-28', label: 'Sommer' });
+    eq(Object.keys(s.kitaClosures[0]).sort(), ['end', 'id', 'start']);
+    M.upsertKita(s, { id: k.id, start: '2026-08-10', end: '2026-08-28' });
     eq(s.kitaClosures.length, 1);
     eq(s.kitaClosures[0].end, '2026-08-28');
     var threw = false;
@@ -267,7 +275,7 @@
     p.vacationDays = D.range('2026-07-06', '2026-07-10').concat(D.range('2026-07-13', '2026-07-17'));
     // Osterwoche inkl. Karfreitag/Ostermontag
     M.setVacation(p, D.range('2026-03-30', '2026-04-06'), true);
-    M.upsertKita(s, { start: '2026-08-10', end: '2026-08-21', label: 'Sommer' });
+    M.upsertKita(s, { start: '2026-08-10', end: '2026-08-21' });
     var csv = IO.personCsv(s, p);
     ok(csv.charCodeAt(0) !== 0xFEFF, 'keine BOM');
     ok(/^[\x00-\x7f]*$/.test(csv), 'reines ASCII');
@@ -288,7 +296,7 @@
     var s = M.createDefaultState();
     s.persons[0].name = 'Anna';
     s.persons[1].vacationDays = ['2027-01-04'];
-    M.upsertKita(s, { start: '2026-12-24', end: '2027-01-06', label: 'Weihnachten' });
+    M.upsertKita(s, { start: '2026-12-24', end: '2027-01-06' });
     var json = IO.stateToJson(s);
     var parsed = JSON.parse(json);
     eq(parsed.version, M.VERSION);
