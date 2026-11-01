@@ -8,7 +8,7 @@
  *                vacationDays: ["YYYY-MM-DD", ...] }, ... ],   // genau 2
  *
  * Versionen: 1 = ohne freeWeekdays (wird beim Laden mit [] ergänzt), 2 = aktuell.
- *   kitaClosures: [ { id, start, end, label } ],
+ *   kitaClosures: [ { id, start, end } ],   // KiTa geschlossen (ohne Bezeichnung)
  *   ui: { year, activeMode, showHolidays, showSchool, showKita, showYearTurn }
  * }
  */
@@ -28,7 +28,7 @@
 
   function defaultUi() {
     return {
-      year: new Date().getFullYear(),
+      year: new Date().getFullYear() + 1, // standardmäßig das Folgejahr planen
       activeMode: 'p1',
       showHolidays: true,
       showSchool: true,
@@ -139,12 +139,11 @@
           return;
         }
         if (k.start > k.end) errors.push(label + ': Start liegt nach dem Ende.');
-        if (k.label !== undefined && typeof k.label !== 'string') errors.push(label + ': Bezeichnung muss Text sein.');
+        // Eine evtl. vorhandene Bezeichnung (ältere Exporte) wird ignoriert.
         kita.push({
           id: typeof k.id === 'string' && k.id ? k.id : uid(),
           start: k.start,
-          end: k.end,
-          label: (k.label || '').trim()
+          end: k.end
         });
       });
     }
@@ -204,7 +203,7 @@
   function upsertKita(state, entry) {
     if (!D.isValidISO(entry.start) || !D.isValidISO(entry.end)) throw new Error('Bitte gültige Daten angeben.');
     if (entry.start > entry.end) throw new Error('Das Startdatum liegt nach dem Enddatum.');
-    var item = { id: entry.id || uid(), start: entry.start, end: entry.end, label: (entry.label || '').trim() };
+    var item = { id: entry.id || uid(), start: entry.start, end: entry.end };
     var list = state.kitaClosures.filter(function (k) { return k.id !== item.id; });
     list.push(item);
     state.kitaClosures = sortKita(list);

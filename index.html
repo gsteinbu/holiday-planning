@@ -98,25 +98,22 @@
   <dialog id="kitaDialog" class="dialog">
     <div class="dialog-inner">
       <header class="dialog-head">
-        <h2>KiTa-Ferien &amp; Schließtage</h2>
+        <h2>KiTa-Schließzeiten</h2>
         <button type="button" class="icon-btn" data-close aria-label="Schließen">×</button>
       </header>
       <form id="kitaForm" class="kita-form" novalidate>
         <input type="hidden" id="kitaId">
-        <label>Bezeichnung
-          <input type="text" id="kitaLabel" maxlength="80" placeholder="z. B. Sommerschließung">
-        </label>
-        <div class="row2">
+        <div class="kita-row">
           <label>Von <input type="date" id="kitaStart" required></label>
           <label>Bis <input type="date" id="kitaEnd" required></label>
+          <div class="form-actions">
+            <button type="submit" class="btn primary" id="kitaSave">Hinzufügen</button>
+            <button type="button" class="btn ghost" id="kitaCancel" hidden>Abbrechen</button>
+          </div>
         </div>
         <p class="error" id="kitaError" hidden></p>
-        <div class="form-actions">
-          <button type="submit" class="btn primary" id="kitaSave">Hinzufügen</button>
-          <button type="button" class="btn ghost" id="kitaCancel" hidden>Abbrechen</button>
-        </div>
       </form>
-      <ul class="kita-list" id="kitaList"></ul>
+      <div class="kita-list" id="kitaList"></div>
       <p class="hint">Tipp: Im Kalender den Modus „KiTa“ wählen und einen Zeitraum ziehen.</p>
     </div>
   </dialog>

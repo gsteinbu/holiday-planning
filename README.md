@@ -14,7 +14,7 @@ beliebigen statischen Webspace legen (z. B. GitHub Pages).
   voneinander wählbar), Jahresurlaubsanspruch, regelmäßig arbeitsfreien
   Wochentagen (z. B. jeden Donnerstag bei Teilzeit) und – in Bayern – der Option
   „Mariä Himmelfahrt ist Feiertag“.
-- **Jahreskalender** mit Jahreswechsel-Ansicht (Dez. des Vorjahres und Jan. des
+- **Jahreskalender** – startet immer im Folgejahr (Planung fürs nächste Jahr) – mit Jahreswechsel-Ansicht (Dez. des Vorjahres und Jan. des
   Folgejahres zuschaltbar).
   - Wochenenden grau, Feiertage rot (mit Bundesland-Kürzel, wenn sie nur für eine
     Person gelten), Schulferien Bayern als oranger Streifen oben, KiTa-Ferien als
@@ -28,7 +28,7 @@ beliebigen statischen Webspace legen (z. B. GitHub Pages).
   „KiTa“ legt per Ziehen einen KiTa-Zeitraum an, „Nur ansehen“ zeigt nur Infos.
 - **Zähler** (fixiert oben): verplante Arbeitstage (ohne Wochenenden, Feiertage
   des eigenen Bundeslandes und eigene freie Wochentage), Anspruch, Rest; Warnung bei Überschreitung.
-- **KiTa-Ferien/Schließtage**: Zeitraum + Bezeichnung, bearbeitbar, löschbar.
+- **KiTa-Schließzeiten**: Zeitraum (von–bis), bearbeitbar, löschbar; Übersicht nach Jahr gruppiert.
 - **Export/Import** (Knopf „Daten“):
   - Urlaub als CSV pro Person: `Start;Ende;Anzahl Tage;Anzahl Arbeitstage`,
     ISO-Daten, Semikolon. *Anzahl Tage* = Kalendertage des Zeitraums,
@@ -91,7 +91,7 @@ Version 1 (ohne `freeWeekdays`) wird weiterhin importiert.
     { "id": "p2", "name": "Ben", "color": "#ea580c", "state": "BY",
       "entitlement": 30, "assumptionDay": true, "freeWeekdays": [], "vacationDays": [] }
   ],
-  "kitaClosures": [ { "id": "k1", "start": "2026-08-17", "end": "2026-08-28", "label": "Sommerschließung" } ],
+  "kitaClosures": [ { "id": "k1", "start": "2026-08-17", "end": "2026-08-28" } ],
   "ui": { "year": 2026, "activeMode": "p1", "showHolidays": true, "showSchool": true,
           "showKita": true, "showYearTurn": false }
 }

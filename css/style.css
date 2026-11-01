@@ -375,15 +375,25 @@ ul.errors { color: var(--danger); padding-left: 20px; }
 .day-chip input:focus-visible + span { outline: 2px solid var(--primary); outline-offset: 2px; }
 .person-settings legend { display: flex; align-items: center; gap: 6px; font-weight: 700; padding: 0 4px; }
 
-.kita-form { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
-.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.kita-form { margin-top: 10px; }
+.kita-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items: end; }
 .form-actions { display: flex; gap: 8px; }
-.kita-list { list-style: none; padding: 0; margin: 16px 0 0; border-top: 1px solid var(--border); }
-.kita-list li { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
-.kita-list li.empty { color: var(--muted); }
-.k-main { display: flex; flex-direction: column; min-width: 0; }
-.k-main span { color: var(--muted); font-size: 13px; }
-.k-actions { display: flex; gap: 6px; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.kita-list { margin-top: 14px; }
+.kita-list .empty { color: var(--muted); }
+.k-year h3 { display: flex; align-items: baseline; gap: 10px; margin: 12px 0 4px; font-size: 15px; }
+.k-year h3 span { font-weight: 400; color: var(--muted); font-size: 13px; }
+.k-year ul { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--border); }
+.k-year li {
+  display: grid; grid-template-columns: 1fr auto auto auto; align-items: center; gap: 4px 10px;
+  padding: 2px 0 2px 10px; border-bottom: 1px solid var(--border);
+  border-left: 4px solid var(--kita);
+}
+.k-year li.editing { background: #f0fdfa; }
+.k-range { font-variant-numeric: tabular-nums; }
+.k-days { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; text-align: right; min-width: 4.5em; }
+.icon-btn.small { width: 38px; height: 38px; font-size: 18px; }
+.icon-btn.small:hover, .icon-btn.small:focus-visible { background: var(--bg); }
 
 .btn-row { display: flex; flex-wrap: wrap; gap: 8px; }
 .file-btn { position: relative; overflow: hidden; }
@@ -410,6 +420,8 @@ ul.errors { color: var(--danger); padding-left: 20px; }
   .calendar { grid-template-columns: 1fr; }
   .day { font-size: 14px; }
   .settings-grid { grid-template-columns: 1fr; }
+  .kita-row { grid-template-columns: 1fr 1fr; }
+  .kita-row .form-actions { grid-column: 1 / -1; }
 }
 @media (max-width: 420px) {
   .app-title { display: none; }
