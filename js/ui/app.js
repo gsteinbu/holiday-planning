@@ -32,8 +32,22 @@
     }
   }
 
-  function activePerson() {
-    return M.findPerson(state, state.ui.activeMode);
+  /** Personen, für die Tippen/Ziehen gerade Urlaub einträgt (Modus p1, p2 oder beide). */
+  function activePersons() {
+    if (state.ui.activeMode === 'both') return state.persons.slice();
+    var p = M.findPerson(state, state.ui.activeMode);
+    return p ? [p] : [];
+  }
+
+  function activeColor() {
+    var ps = activePersons();
+    if (ps.length === 1) return ps[0].color;
+    return ps.length ? '#0f172a' : '#0d9488';
+  }
+
+  /** Eintragen, wenn am Starttag nicht alle aktiven Personen Urlaub haben, sonst löschen. */
+  function addsVacation(persons, day) {
+    return !persons.every(function (p) { return M.hasVacation(p, day); });
   }
 
   // ---------- Kalender ----------
@@ -42,15 +56,16 @@
     getSchoolMap: function () { return schoolIndex.map; },
     getKitaMap: function () { return kitaMap; },
     previewKind: function (day) {
-      var p = activePerson();
-      if (p) return M.hasVacation(p, day) ? 'del' : 'add';
+      var ps = activePersons();
+      if (ps.length) return addsVacation(ps, day) ? 'add' : 'del';
       if (state.ui.activeMode === 'kita') return 'kita';
       return null;
     },
     onTap: function (day) {
-      var p = activePerson();
-      if (p) {
-        M.setVacation(p, [day], !M.hasVacation(p, day));
+      var ps = activePersons();
+      if (ps.length) {
+        var add = addsVacation(ps, day);
+        ps.forEach(function (p) { M.setVacation(p, [day], add); });
         commit();
       } else if (state.ui.activeMode === 'kita') {
         var existing = kitaMap.get(day);
@@ -59,14 +74,19 @@
       showDayInfo(day);
     },
     onRange: function (anchor, end) {
-      var p = activePerson();
+      var ps = activePersons();
       var days = D.range(anchor, end);
-      if (p) {
-        M.setVacation(p, days, !M.hasVacation(p, anchor));
+      if (ps.length) {
+        var add = addsVacation(ps, anchor);
+        ps.forEach(function (p) { M.setVacation(p, days, add); });
         commit();
-        var n = days.filter(function (d) { return W.isWorkday(d, p); }).length;
-        toast((M.hasVacation(p, anchor) ? 'Eingetragen: ' : 'Gelöscht: ') +
-          D.formatDE(days[0]) + ' – ' + D.formatDE(days[days.length - 1]) + ' (' + n + ' Arbeitstage)');
+        var counts = ps.map(function (p) {
+          var n = days.filter(function (d) { return W.isWorkday(d, p); }).length;
+          return ps.length > 1 ? p.name + ' ' + n : n + ' Arbeitstage';
+        });
+        toast((add ? 'Eingetragen: ' : 'Gelöscht: ') +
+          D.formatDE(days[0]) + ' – ' + D.formatDE(days[days.length - 1]) +
+          ' (' + counts.join(', ') + (ps.length > 1 ? ' Arbeitstage' : '') + ')');
       } else if (state.ui.activeMode === 'kita') {
         openKita({ start: days[0], end: days[days.length - 1] });
       }
@@ -83,7 +103,7 @@
     var y = state.ui.year;
     $('counters').innerHTML = state.persons.map(function (p) {
       var s = W.summary(p, y);
-      var active = state.ui.activeMode === p.id;
+      var active = state.ui.activeMode === p.id || state.ui.activeMode === 'both';
       var warn = s.exceeded
         ? '<div class="warnline">⚠ Anspruch um ' + (-s.remaining) + ' ' + (s.remaining === -1 ? 'Tag' : 'Tage') + ' überschritten</div>'
         : '';
@@ -100,21 +120,26 @@
   }
 
   function renderModes() {
+    var p1 = state.persons[0], p2 = state.persons[1];
     var modes = state.persons.map(function (p) {
       return { id: p.id, label: p.name, color: p.color };
-    }).concat([{ id: 'kita', label: 'KiTa' }, { id: 'view', label: 'Nur ansehen' }]);
+    }).concat([
+      { id: 'both', label: 'Beide', dot: 'linear-gradient(135deg,' + p1.color + ' 50%,' + p2.color + ' 50%)' },
+      { id: 'kita', label: 'KiTa' },
+      { id: 'view', label: 'Ansehen' }
+    ]);
     $('modeButtons').innerHTML = modes.map(function (m) {
       var active = state.ui.activeMode === m.id;
       return '<button type="button" role="radio" aria-checked="' + active + '" class="seg' + (active ? ' active' : '') +
         '" data-mode="' + m.id + '"' + (m.color ? ' style="--pc:' + m.color + '"' : '') + '>' +
-        (m.color ? '<span class="dot"></span>' : '') + esc(m.label) + '</button>';
+        (m.color ? '<span class="dot"></span>' : '') +
+        (m.dot ? '<span class="dot" style="background:' + m.dot + '"></span>' : '') + esc(m.label) + '</button>';
     }).join('');
   }
 
   function setMode(mode) {
     state.ui.activeMode = mode;
-    var p = activePerson();
-    $('calendar').style.setProperty('--active', p ? p.color : '#0d9488');
+    $('calendar').style.setProperty('--active', activeColor());
     persist();
     renderCounters();
     renderModes();
@@ -145,8 +170,7 @@
   }
 
   function renderAll() {
-    var p = activePerson();
-    $('calendar').style.setProperty('--active', p ? p.color : '#0d9488');
+    $('calendar').style.setProperty('--active', activeColor());
     renderCounters();
     renderModes();
     renderToolbar();
@@ -171,10 +195,12 @@
       var hol = W.personHoliday(day, p);
       var vac = M.hasVacation(p, day);
       var parts = [];
-      if (hol) parts.push('Feiertag (' + H.STATES[p.state] + '): ' + esc(hol));
+      if (hol) parts.push(/arbeitsfrei/.test(hol) ? esc(hol) : 'Feiertag (' + H.STATES[p.state] + '): ' + esc(hol));
       if (vac) {
         var reason = W.freeReason(day, p);
-        parts.push(reason ? '<b>Urlaub</b> (zählt nicht – ' + esc(reason) + ')' : '<b>Urlaub</b> (zählt)');
+        if (!reason) parts.push('<b>Urlaub</b> (zählt)');
+        else if (reason === hol) parts.push('<b>Urlaub</b> (zählt nicht)'); // Grund steht schon davor
+        else parts.push('<b>Urlaub</b> (zählt nicht – ' + esc(reason) + ')');
       } else if (!hol && W.isPersonalFreeDay(day, p) && !D.isWeekend(day)) {
         parts.push('arbeitsfrei (' + esc(W.freeReason(day, p)) + ')');
       }

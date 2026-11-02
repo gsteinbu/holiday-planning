@@ -416,6 +416,9 @@ ul.errors { color: var(--danger); padding-left: 20px; }
   .c-nums { gap: 0 8px; font-size: 12px; }
   .c-nums b { font-size: 14px; }
   .modes-label { display: none; }
+  .segmented { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; max-width: 100%; }
+  .segmented::-webkit-scrollbar { display: none; }
+  .seg { flex: none; }
   .seg { min-height: 32px; padding: 3px 9px; font-size: 13px; }
   .calendar { grid-template-columns: 1fr; }
   .day { font-size: 14px; }
