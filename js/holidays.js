@@ -1,5 +1,6 @@
 /*
- * Gesetzliche Feiertage für Hessen (HE) und Bayern (BY), rein berechnet.
+ * Gesetzliche Feiertage für Hessen (HE) und Bayern (BY), rein berechnet,
+ * plus Heiligabend und Silvester, die als arbeitsfrei gelten.
  */
 (function (root) {
   'use strict';
@@ -51,7 +52,10 @@
       [D.addDays(easter, 60), 'Fronleichnam'],
       [D.iso(y, 10, 3), 'Tag der Deutschen Einheit'],
       [D.iso(y, 12, 25), '1. Weihnachtstag'],
-      [D.iso(y, 12, 26), '2. Weihnachtstag']
+      [D.iso(y, 12, 26), '2. Weihnachtstag'],
+      // Keine gesetzlichen Feiertage, aber üblicherweise arbeitsfrei -> zählen nicht als Urlaub.
+      [D.iso(y, 12, 24), 'Heiligabend (arbeitsfrei)'],
+      [D.iso(y, 12, 31), 'Silvester (arbeitsfrei)']
     ];
     if (state === 'HE') {
       // Im Hessischen Feiertagsgesetz ausdrücklich genannt (fallen immer auf Sonntag).

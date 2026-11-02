@@ -30,7 +30,7 @@
   function freeReason(isoDay, person) {
     if (D.isWeekend(isoDay)) return 'Wochenende';
     var hol = H.holidayName(isoDay, person.state, holidayOptions(person));
-    if (hol) return 'Feiertag';
+    if (hol) return hol;
     if (isPersonalFreeDay(isoDay, person)) return 'freier ' + D.WEEKDAYS_LONG[D.weekday(isoDay)];
     return null;
   }

@@ -153,7 +153,7 @@
     var ui = defaultUi();
     if (isObj(input.ui)) {
       if (Number.isInteger(input.ui.year) && input.ui.year >= 1900 && input.ui.year <= 2200) ui.year = input.ui.year;
-      if (['p1', 'p2', 'view', 'kita'].indexOf(input.ui.activeMode) >= 0) ui.activeMode = input.ui.activeMode;
+      if (['p1', 'p2', 'both', 'view', 'kita'].indexOf(input.ui.activeMode) >= 0) ui.activeMode = input.ui.activeMode;
       ['showHolidays', 'showSchool', 'showKita', 'showYearTurn'].forEach(function (key) {
         if (typeof input.ui[key] === 'boolean') ui[key] = input.ui[key];
       });

@@ -22,12 +22,14 @@ beliebigen statischen Webspace legen (z. B. GitHub Pages).
   - Regelmäßig freie Wochentage einer Person sind in ihrer Farbe schraffiert.
   - Urlaub in der Farbe der Person; Überlappung diagonal geteilt. Urlaub an
     arbeitsfreien Tagen wird blass dargestellt (zählt nicht).
-- **Bedienung**: Person oben wählen. Tag antippen/anklicken = an/aus.
+- **Bedienung**: Person oben wählen – oder „Beide“, um Urlaub für beide Personen
+  gleichzeitig einzutragen bzw. zu löschen. Tag antippen/anklicken = an/aus.
   Zeitraum: mit der Maus ziehen, am Handy *lange drücken und ziehen*. Beginnt
-  der Zeitraum auf einem Urlaubstag, wird gelöscht, sonst eingetragen. Modus
-  „KiTa“ legt per Ziehen einen KiTa-Zeitraum an, „Nur ansehen“ zeigt nur Infos.
+  der Zeitraum auf einem Urlaubstag (bei „Beide“: Urlaubstag beider Personen), wird
+  gelöscht, sonst eingetragen. Modus
+  „KiTa“ legt per Ziehen einen KiTa-Zeitraum an, „Ansehen“ zeigt nur Infos.
 - **Zähler** (fixiert oben): verplante Arbeitstage (ohne Wochenenden, Feiertage
-  des eigenen Bundeslandes und eigene freie Wochentage), Anspruch, Rest; Warnung bei Überschreitung.
+  des eigenen Bundeslandes, Heiligabend, Silvester und eigene freie Wochentage), Anspruch, Rest; Warnung bei Überschreitung.
 - **KiTa-Schließzeiten**: Zeitraum (von–bis), bearbeitbar, löschbar; Übersicht nach Jahr gruppiert.
 - **Export/Import** (Knopf „Daten“):
   - Urlaub als CSV pro Person: `Start;Ende;Anzahl Tage;Anzahl Arbeitstage`,
@@ -52,6 +54,9 @@ beliebigen statischen Webspace legen (z. B. GitHub Pages).
   Mariä Himmelfahrt; ohne Ostersonntag/Pfingstsonntag. Das Augsburger
   Friedensfest wird nicht berücksichtigt. Buß- und Bettag ist kein Feiertag,
   sondern schulfrei und steht in den Schulferien-Daten.
+- Heiligabend (24.12.) und Silvester (31.12.) sind keine gesetzlichen Feiertage,
+  gelten aber in beiden Bundesländern als arbeitsfrei und werden wie Feiertage
+  behandelt (zählen nicht als Urlaubstag, rot markiert).
 
 ## Struktur
 

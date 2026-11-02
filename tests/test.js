@@ -70,28 +70,32 @@
       '2026-01-01 Neujahr', '2026-04-03 Karfreitag', '2026-04-05 Ostersonntag', '2026-04-06 Ostermontag',
       '2026-05-01 Tag der Arbeit', '2026-05-14 Christi Himmelfahrt', '2026-05-24 Pfingstsonntag',
       '2026-05-25 Pfingstmontag', '2026-06-04 Fronleichnam', '2026-10-03 Tag der Deutschen Einheit',
-      '2026-12-25 1. Weihnachtstag', '2026-12-26 2. Weihnachtstag']);
+      '2026-12-24 Heiligabend (arbeitsfrei)', '2026-12-25 1. Weihnachtstag', '2026-12-26 2. Weihnachtstag',
+      '2026-12-31 Silvester (arbeitsfrei)']);
   });
   test('Feiertage Hessen 2027', function () {
     eq(holidayList(2027, 'HE'), [
       '2027-01-01 Neujahr', '2027-03-26 Karfreitag', '2027-03-28 Ostersonntag', '2027-03-29 Ostermontag',
       '2027-05-01 Tag der Arbeit', '2027-05-06 Christi Himmelfahrt', '2027-05-16 Pfingstsonntag',
       '2027-05-17 Pfingstmontag', '2027-05-27 Fronleichnam', '2027-10-03 Tag der Deutschen Einheit',
-      '2027-12-25 1. Weihnachtstag', '2027-12-26 2. Weihnachtstag']);
+      '2027-12-24 Heiligabend (arbeitsfrei)', '2027-12-25 1. Weihnachtstag', '2027-12-26 2. Weihnachtstag',
+      '2027-12-31 Silvester (arbeitsfrei)']);
   });
   test('Feiertage Bayern 2026 (mit Mariä Himmelfahrt)', function () {
     eq(holidayList(2026, 'BY', { assumptionDay: true }), [
       '2026-01-01 Neujahr', '2026-01-06 Heilige Drei Könige', '2026-04-03 Karfreitag', '2026-04-06 Ostermontag',
       '2026-05-01 Tag der Arbeit', '2026-05-14 Christi Himmelfahrt', '2026-05-25 Pfingstmontag',
       '2026-06-04 Fronleichnam', '2026-08-15 Mariä Himmelfahrt', '2026-10-03 Tag der Deutschen Einheit',
-      '2026-11-01 Allerheiligen', '2026-12-25 1. Weihnachtstag', '2026-12-26 2. Weihnachtstag']);
+      '2026-11-01 Allerheiligen', '2026-12-24 Heiligabend (arbeitsfrei)', '2026-12-25 1. Weihnachtstag', '2026-12-26 2. Weihnachtstag',
+      '2026-12-31 Silvester (arbeitsfrei)']);
   });
   test('Feiertage Bayern 2027 (ohne Mariä Himmelfahrt)', function () {
     eq(holidayList(2027, 'BY'), [
       '2027-01-01 Neujahr', '2027-01-06 Heilige Drei Könige', '2027-03-26 Karfreitag', '2027-03-29 Ostermontag',
       '2027-05-01 Tag der Arbeit', '2027-05-06 Christi Himmelfahrt', '2027-05-17 Pfingstmontag',
       '2027-05-27 Fronleichnam', '2027-10-03 Tag der Deutschen Einheit',
-      '2027-11-01 Allerheiligen', '2027-12-25 1. Weihnachtstag', '2027-12-26 2. Weihnachtstag']);
+      '2027-11-01 Allerheiligen', '2027-12-24 Heiligabend (arbeitsfrei)', '2027-12-25 1. Weihnachtstag', '2027-12-26 2. Weihnachtstag',
+      '2027-12-31 Silvester (arbeitsfrei)']);
   });
   test('Mariä Himmelfahrt nur in Bayern', function () {
     eq(H.holidayName('2027-08-15', 'HE', { assumptionDay: true }), null);
@@ -105,16 +109,17 @@
   });
 
   // ---------- Arbeitstage ----------
-  test('Arbeitstage im Jahr 2026: Hessen 253, Bayern 252', function () {
-    // 261 Mo-Fr; HE: 8 Feiertage an Werktagen (03.10. und 26.12. sind Sa);
+  test('Arbeitstage im Jahr 2026: Hessen 251, Bayern 250', function () {
+    // 261 Mo-Fr; HE: 8 Feiertage an Werktagen (03.10. und 26.12. sind Sa)
+    // + Heiligabend und Silvester (beide Do);
     // BY: zusätzlich 06.01. (Di), 01.11. ist So, 15.08. ist Sa.
-    eq(W.countWorkdays('2026-01-01', '2026-12-31', person('HE')), 253);
-    eq(W.countWorkdays('2026-01-01', '2026-12-31', person('BY', { assumptionDay: true })), 252);
+    eq(W.countWorkdays('2026-01-01', '2026-12-31', person('HE')), 251);
+    eq(W.countWorkdays('2026-01-01', '2026-12-31', person('BY', { assumptionDay: true })), 250);
   });
   test('Arbeitstage im Jahr 2027: Mariä Himmelfahrt fällt auf Sonntag', function () {
-    // 261 Mo-Fr; 1.5. Sa, 3.10. So, 25./26.12. Sa/So
-    eq(W.countWorkdays('2027-01-01', '2027-12-31', person('HE')), 255);
-    eq(W.countWorkdays('2027-01-01', '2027-12-31', person('BY', { assumptionDay: true })), 253);
+    // 261 Mo-Fr; 1.5. Sa, 3.10. So, 25./26.12. Sa/So; 24.12. und 31.12. sind Fr
+    eq(W.countWorkdays('2027-01-01', '2027-12-31', person('HE')), 253);
+    eq(W.countWorkdays('2027-01-01', '2027-12-31', person('BY', { assumptionDay: true })), 251);
   });
   test('Mariä Himmelfahrt 2029 (Mittwoch) zählt nur mit Option', function () {
     eq(W.isWorkday('2029-08-15', person('BY', { assumptionDay: false })), true);
@@ -130,9 +135,19 @@
     eq(W.usedVacationDays(person('HE', { vacationDays: ['2026-01-06'] }), 2026), 1);
     eq(W.usedVacationDays(person('BY', { vacationDays: ['2026-01-06'] }), 2026), 0);
   });
+  test('Heiligabend und Silvester zählen nicht als Urlaubstage', function () {
+    ['HE', 'BY'].forEach(function (st) {
+      var p = person(st, { vacationDays: D.range('2026-12-21', '2026-12-31') });
+      // Mo 21. - Do 31.12.: frei sind 24., 25., 26. (Sa), 27. (So), 31. -> 6 Arbeitstage
+      eq(W.usedVacationDays(p, 2026), 6, st);
+      eq(W.isWorkday('2027-12-24', p), false, st + ' 24.12.2027 (Fr)');
+      eq(W.isWorkday('2027-12-31', p), false, st + ' 31.12.2027 (Fr)');
+      eq(W.freeReason('2027-12-24', p), 'Heiligabend (arbeitsfrei)');
+    });
+  });
   test('Urlaubszählung trennt nach Kalenderjahren', function () {
     var p = person('HE', { vacationDays: D.range('2026-12-28', '2027-01-08') });
-    eq(W.usedVacationDays(p, 2026), 4, '28.-31.12.');
+    eq(W.usedVacationDays(p, 2026), 3, '28.-30.12. (31.12. arbeitsfrei)');
     eq(W.usedVacationDays(p, 2027), 5, '04.-08.01. (01.01. Feiertag)');
   });
   test('Zusammenfassung mit Überschreitung', function () {
@@ -156,11 +171,11 @@
     eq(W.isWorkday('2026-07-09', p), false);
     eq(W.freeReason('2026-07-09', p), 'freier Donnerstag');
     eq(W.freeReason('2026-07-11', p), 'Wochenende');
-    eq(W.freeReason('2026-06-04', p), 'Feiertag', 'Fronleichnam (Do) bleibt Feiertag');
+    eq(W.freeReason('2026-06-04', p), 'Fronleichnam', 'Fronleichnam (Do) bleibt Feiertag');
     eq(W.freeReason('2026-07-08', p), null);
-    // 2026 Hessen: 253 Arbeitstage; 2026 hat 53 Donnerstage, davon 3 Feiertage
-    // (01.01., 14.05., 04.06.) -> 50 zusätzliche freie Tage
-    eq(W.countWorkdays('2026-01-01', '2026-12-31', p), 253 - 50);
+    // 2026 Hessen: 251 Arbeitstage; 2026 hat 53 Donnerstage, davon 5 ohnehin frei
+    // (01.01., 14.05., 04.06., 24.12., 31.12.) -> 48 zusätzliche freie Tage
+    eq(W.countWorkdays('2026-01-01', '2026-12-31', p), 251 - 48);
     p.freeWeekdays = [1, 5];
     eq(W.usedVacationDays(p, 2026), 3);
   });
@@ -218,6 +233,11 @@
     var s = M.createDefaultState();
     s.kitaClosures = [{ id: 'a', start: '2026-08-10', end: '2026-08-21', label: 'Sommer' }];
     eq(M.validateState(s).state.kitaClosures, [{ id: 'a', start: '2026-08-10', end: '2026-08-21' }]);
+  });
+  test('Modus "beide" bleibt beim Laden erhalten', function () {
+    var s = M.createDefaultState();
+    s.ui.activeMode = 'both';
+    eq(M.validateState(s).state.ui.activeMode, 'both');
   });
   test('Standardjahr ist das Folgejahr', function () {
     eq(M.createDefaultState().ui.year, new Date().getFullYear() + 1);
