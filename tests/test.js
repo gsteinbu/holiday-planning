@@ -288,7 +288,7 @@
   });
 
   // ---------- Export / Import ----------
-  test('CSV-Export: nur Urlaub der Person, ohne BOM, mit Tages- und Arbeitstagezahl', function () {
+  test('CSV-Export: nur Urlaub der Person, deutsches Datum, ohne BOM, mit Tages- und Arbeitstagezahl', function () {
     var s = M.createDefaultState();
     var p = s.persons[0]; // Hessen
     // Zwei Wochen Mo-Fr (Wochenende dazwischen nicht markiert) -> ein Zeitraum
@@ -301,8 +301,8 @@
     ok(/^[\x00-\x7f]*$/.test(csv), 'reines ASCII');
     eq(csv.split('\r\n'), [
       'Start;Ende;Anzahl Tage;Anzahl Arbeitstage',
-      '2026-03-30;2026-04-06;8;4',
-      '2026-07-06;2026-07-17;12;10',
+      '30.03.2026;06.04.2026;8;4',
+      '06.07.2026;17.07.2026;12;10',
       '']);
   });
   test('CSV-Export berücksichtigt freie Wochentage', function () {
@@ -310,7 +310,7 @@
     var p = s.persons[0];
     p.freeWeekdays = [4]; // donnerstags frei
     p.vacationDays = ['2026-07-06', '2026-07-07', '2026-07-08', '2026-07-10'];
-    eq(IO.personCsv(s, p).split('\r\n')[1], '2026-07-06;2026-07-10;5;4');
+    eq(IO.personCsv(s, p).split('\r\n')[1], '06.07.2026;10.07.2026;5;4');
   });
   test('JSON-Export und -Import ergeben denselben Stand', function () {
     var s = M.createDefaultState();

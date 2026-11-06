@@ -14,13 +14,14 @@
    *  - Anzahl Tage: Kalendertage von Start bis Ende (inklusive)
    *  - Anzahl Arbeitstage: davon verbrauchte Urlaubstage (ohne Wochenenden,
    *    Feiertage und freie Wochentage der Person)
-   * Inhalt ist reines ASCII (ISO-Daten, Zahlen) - daher ohne BOM, die manche
+   * Daten im deutschen Format TT.MM.JJJJ.
+   * Inhalt ist reines ASCII (Daten, Zahlen) - daher ohne BOM, die manche
    * Programme sonst als "ï»¿" anzeigen. Trennzeichen Semikolon, CRLF.
    */
   function personCsv(state, person) {
     var lines = ['Start;Ende;Anzahl Tage;Anzahl Arbeitstage'];
     W.toRanges(person.vacationDays, person).forEach(function (r) {
-      lines.push([r.start, r.end, D.diffDays(r.start, r.end) + 1, W.countWorkdays(r.start, r.end, person)].join(';'));
+      lines.push([D.formatDE(r.start), D.formatDE(r.end), D.diffDays(r.start, r.end) + 1, W.countWorkdays(r.start, r.end, person)].join(';'));
     });
     return lines.join('\r\n') + '\r\n';
   }
