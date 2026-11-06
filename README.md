@@ -33,7 +33,7 @@ beliebigen statischen Webspace legen (z. B. GitHub Pages).
 - **KiTa-Schließzeiten**: Zeitraum (von–bis), bearbeitbar, löschbar; Übersicht nach Jahr gruppiert.
 - **Export/Import** (Knopf „Daten“):
   - Urlaub als CSV pro Person: `Start;Ende;Anzahl Tage;Anzahl Arbeitstage`,
-    ISO-Daten, Semikolon. *Anzahl Tage* = Kalendertage des Zeitraums,
+    Datum im deutschen Format TT.MM.JJJJ, Semikolon. *Anzahl Tage* = Kalendertage des Zeitraums,
     *Anzahl Arbeitstage* = davon verbrauchte Urlaubstage. Aufeinanderfolgende
     Urlaubstage werden zu Zeiträumen zusammengefasst (auch über Wochenenden,
     Feiertage und freie Wochentage hinweg). KiTa-Ferien sind nicht enthalten.
