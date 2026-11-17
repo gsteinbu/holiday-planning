@@ -19,3 +19,8 @@ a = 3,2 (Schachtbreite innen), b = 1,75 (Höhe innen), f = 7,1 (Oberkante innen 
 e = 7,5 (Pufferebene → Schachtvorderkante). Bitte gegen das Normblatt NEM 362 prüfen.
 
 Druck: Resin empfohlen (Wand 0,6–0,7 mm). Bei FDM `WAND` ≥ 0,8 und Schacht mit Öffnung nach oben drucken.
+
+## 3D-Ansicht
+- `nem362_adapter_3d.html`: eigenständiger, drehbarer 3D-Viewer (offline, im Browser öffnen)
+- `ansicht_vorn_unten.png`, `ansicht_oben.png`: Standbilder
+- Neu erzeugen: `npm install three@0.170.0`, dann `python3 make_viewer.py node_modules/three`
