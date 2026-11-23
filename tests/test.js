@@ -312,6 +312,41 @@
     p.vacationDays = ['2026-07-06', '2026-07-07', '2026-07-08', '2026-07-10'];
     eq(IO.personCsv(s, p).split('\r\n')[1], '06.07.2026;10.07.2026;5;4');
   });
+  test('ICS-Export: ganztägige Termine je Zeitraum, nur Urlaub der Person', function () {
+    var s = M.createDefaultState();
+    var p = s.persons[0];
+    p.name = 'Anna';
+    p.vacationDays = D.range('2027-07-05', '2027-07-09').concat(D.range('2027-07-12', '2027-07-16'), ['2027-12-31']);
+    M.upsertKita(s, { start: '2027-08-09', end: '2027-08-27' });
+    var ics = IO.personIcs(s, p, new Date(Date.UTC(2026, 10, 23, 8, 30, 0)));
+    var lines = ics.split('\r\n');
+    eq(lines[0], 'BEGIN:VCALENDAR');
+    eq(lines[lines.length - 2], 'END:VCALENDAR');
+    eq(lines[lines.length - 1], '', 'endet mit CRLF');
+    ok(ics.indexOf('\n') === ics.indexOf('\r\n') + 1, 'nur CRLF-Zeilenenden');
+    eq(lines.filter(function (l) { return l === 'BEGIN:VEVENT'; }).length, 2, '2 Zeiträume, KiTa nicht enthalten');
+    ok(lines.indexOf('DTSTART;VALUE=DATE:20270705') >= 0);
+    ok(lines.indexOf('DTEND;VALUE=DATE:20270717') >= 0, 'DTEND = Tag nach dem Ende');
+    ok(lines.indexOf('DTSTART;VALUE=DATE:20271231') >= 0);
+    ok(lines.indexOf('DTEND;VALUE=DATE:20280101') >= 0, 'über den Jahreswechsel');
+    ok(lines.indexOf('UID:urlaub-p1-20270705-20270716@urlaubsplaner') >= 0, 'stabile UID');
+    ok(lines.indexOf('DTSTAMP:20261123T083000Z') >= 0);
+    ok(lines.indexOf('SUMMARY:Urlaub Anna') >= 0);
+    ok(lines.indexOf('DESCRIPTION:12 Tage\\, davon 10 Arbeitstage Urlaub') >= 0, 'Komma maskiert');
+  });
+  test('ICS-Export: Sonderzeichen maskiert und lange Zeilen gefaltet', function () {
+    var s = M.createDefaultState();
+    var p = s.persons[1];
+    p.name = 'Jörg; Müller-Lüdenscheidt, genannt „der Urlauber“ aus Garmisch-Partenkirchen';
+    p.vacationDays = ['2027-03-01'];
+    var ics = IO.personIcs(s, p);
+    var lines = ics.split('\r\n');
+    lines.forEach(function (l) {
+      ok(new TextEncoder().encode(l).length <= 75, 'Zeile zu lang: ' + l);
+    });
+    var unfolded = ics.replace(/\r\n /g, '');
+    ok(unfolded.indexOf('SUMMARY:Urlaub Jörg\\; Müller-Lüdenscheidt\\, genannt „der Urlauber“ aus Garmisch-Partenkirchen\r\n') >= 0, unfolded);
+  });
   test('JSON-Export und -Import ergeben denselben Stand', function () {
     var s = M.createDefaultState();
     s.persons[0].name = 'Anna';

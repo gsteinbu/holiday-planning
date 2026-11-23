@@ -469,7 +469,9 @@
     $('lastExportInfo').textContent = text;
     $('lastExportFooter').textContent = text;
     $('csvButtons').innerHTML = state.persons.map(function (p, i) {
-      return '<button type="button" class="btn" data-csv="' + i + '" style="--pc:' + p.color + '"><span class="dot"></span>CSV ' + esc(p.name) + '</button>';
+      return '<div class="export-row" style="--pc:' + p.color + '"><span class="export-name"><span class="dot"></span>' + esc(p.name) + '</span>' +
+        '<button type="button" class="btn small" data-csv="' + i + '">CSV</button>' +
+        '<button type="button" class="btn small" data-ics="' + i + '">Kalender (ICS)</button></div>';
     }).join('');
   }
 
@@ -480,10 +482,15 @@
   $('exportJson').addEventListener('click', exportJson);
   $('bannerExport').addEventListener('click', exportJson);
   $('csvButtons').addEventListener('click', function (e) {
-    var btn = e.target.closest('[data-csv]');
-    if (!btn) return;
-    var p = state.persons[+btn.getAttribute('data-csv')];
-    download('urlaub-' + IO.safeFileName(p.name) + '-' + stamp() + '.csv', IO.personCsv(state, p), 'text/csv;charset=utf-8');
+    var csv = e.target.closest('[data-csv]');
+    var ics = e.target.closest('[data-ics]');
+    if (csv) {
+      var p = state.persons[+csv.getAttribute('data-csv')];
+      download('urlaub-' + IO.safeFileName(p.name) + '-' + stamp() + '.csv', IO.personCsv(state, p), 'text/csv;charset=utf-8');
+    } else if (ics) {
+      var q = state.persons[+ics.getAttribute('data-ics')];
+      download('urlaub-' + IO.safeFileName(q.name) + '-' + stamp() + '.ics', IO.personIcs(state, q), 'text/calendar;charset=utf-8');
+    }
   });
 
   $('importJson').addEventListener('change', function (e) {
