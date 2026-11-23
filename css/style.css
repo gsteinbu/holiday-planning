@@ -397,6 +397,9 @@ ul.errors { color: var(--danger); padding-left: 20px; }
 
 .btn-row { display: flex; flex-wrap: wrap; gap: 8px; }
 .file-btn { position: relative; overflow: hidden; }
+.export-rows { display: flex; flex-direction: column; gap: 6px; }
+.export-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.export-name { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; min-width: 8em; margin-right: auto; }
 .file-btn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 
 /* ---------- Kleine Bildschirme ---------- */

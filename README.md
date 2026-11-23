@@ -39,6 +39,10 @@ beliebigen statischen Webspace legen (z. B. GitHub Pages).
     Feiertage und freie Wochentage hinweg). KiTa-Ferien sind nicht enthalten.
     Die Datei ist reines ASCII und daher ohne BOM (manche Programme zeigen eine
     BOM sonst als „ï»¿“ an).
+  - Urlaub als ICS-Kalenderdatei pro Person: je Zeitraum (wie in der CSV) ein
+    ganztägiger Termin „Urlaub <Name>“, Beschreibung mit Tagen und Arbeitstagen.
+    Die Termin-IDs hängen nur von Person und Zeitraum ab, ein erneuter Import
+    aktualisiert also vorhandene Termine statt sie zu verdoppeln.
   - JSON mit vollständigem Stand und Versionsfeld; Import mit Validierung und
     Rückfrage vor dem Überschreiben.
 - **Speicherung** im `localStorage` des Browsers, mit Erinnerung, regelmäßig
